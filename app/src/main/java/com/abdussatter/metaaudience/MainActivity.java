@@ -2,6 +2,7 @@ package com.abdussatter.metaaudience;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,10 +29,12 @@ public class MainActivity extends AppCompatActivity {
     private AdView adView;
     private InterstitialAd interstitialAd;
     private final String TAG = "FullScreenAd";
+    int onOff = 0;
     Button showAdBtn;
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,25 +48,19 @@ public class MainActivity extends AppCompatActivity {
 
         sharedPreferences = getSharedPreferences(""+getString(R.string.app_name),MODE_PRIVATE);
         editor = sharedPreferences.edit();
-        Date date = new Date(System.currentTimeMillis());
-        long millis = date.getTime();
         long minute=1000*60*3;
-        long oldTime = sharedPreferences.getLong("time",0);
-        long difference = (System.currentTimeMillis()-oldTime);
-        if(difference>=minute){
-            tvDisplay.setText(""+Long.toString(difference));
-
-            loadBannerAd();
-            loadFullScreenAd();
+        long bOldTime = sharedPreferences.getLong("bTime",0);
+        long iOldTime = sharedPreferences.getLong("iTime",0);
+        long bDifference = (System.currentTimeMillis()-bOldTime);
+        long iDifference = (System.currentTimeMillis()-iOldTime);
+        if(bDifference>=minute && onOff == 0){
+            tvDisplay.setText("Banner "+Long.toString(bDifference));
+            loadFBBannerAd();
         }
-        else{
-            tvDisplay.setText("DDD"+Long.toString(difference));
-            //editor.putLong("time",millis).apply();
-
-
-
+        if(iDifference>=minute && onOff == 0){
+            tvDisplay.append("\nInterstitial "+ Long.toString(iDifference));
+            loadFBFullScreenAd();
         }
-
 
         //=======================================================================================
 
@@ -85,8 +82,12 @@ public class MainActivity extends AppCompatActivity {
     //End onCreate Bundle
 
     //============================================================================================
-    private void loadFullScreenAd() {
+    private void loadFBFullScreenAd() {
         interstitialAd = new InterstitialAd(this, "YOUR_PLACEMENT_ID");
+        sharedPreferences = getSharedPreferences(""+getString(R.string.app_name),MODE_PRIVATE);
+        editor = sharedPreferences.edit();
+        Date date = new Date(System.currentTimeMillis());
+        long millis = date.getTime();
         InterstitialAdListener interstitialAdListener = new InterstitialAdListener() {
             @Override
             public void onInterstitialDisplayed(Ad ad) {
@@ -98,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
             public void onInterstitialDismissed(Ad ad) {
                 // Interstitial dismissed callback
                 Log.e(TAG, "Interstitial ad dismissed.");
-                loadFullScreenAd();
+                loadFBFullScreenAd();
             }
 
             @Override
@@ -119,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
             public void onAdClicked(Ad ad) {
                 // Ad clicked callback
                 Log.d(TAG, "Interstitial ad clicked!");
+                editor.putLong("iTime",millis).apply();
 
                 fullScreenAdClicked++;
                 if(fullScreenAdClicked>=2){
@@ -142,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
 
     //============================================================================================
 
-    private void loadBannerAd(){
+    private void loadFBBannerAd(){
         adView = new AdView(this, "IMG_16_9_APP_INSTALL#YOUR_PLACEMENT_ID",AdSize.BANNER_HEIGHT_50);
         LinearLayout adContainer = (LinearLayout) findViewById(R.id.banner_container);
         adContainer.addView(adView);
@@ -150,9 +152,6 @@ public class MainActivity extends AppCompatActivity {
         editor = sharedPreferences.edit();
         Date date = new Date(System.currentTimeMillis());
         long millis = date.getTime();
-        long minute=1000*60*2;
-        long oldTime = sharedPreferences.getLong("time",0);
-        long difference = (System.currentTimeMillis()-oldTime);
         //adView.loadAd();
         AdListener bannerAdListener = new AdListener() {
             @Override
@@ -171,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
 
                 bannerAdClicked++;
                 //tvDisplay.append("\n"+"Add Clicked"+bannerAdClicked);
-                editor.putLong("time",millis).apply();
+                editor.putLong("bTime",millis).apply();
 
 
                 if(bannerAdClicked>=2){
