@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
 
         //=======================================================================================
 
+
         sharedPreferences = getSharedPreferences(""+getString(R.string.app_name),MODE_PRIVATE);
         editor = sharedPreferences.edit();
         Date date = new Date(System.currentTimeMillis());
@@ -57,17 +58,20 @@ public class MainActivity extends AppCompatActivity {
         }
         else{
             tvDisplay.setText("DDD"+Long.toString(difference));
-            editor.putLong("time",millis).apply();
+            //editor.putLong("time",millis).apply();
 
 
 
         }
+
+
         //=======================================================================================
 
 
 
         //loadBannerAd();
-        sharedPreferences();
+        //sharedPreferences();
+        //loadBannerAd();
         //loadFullScreenAd();
 
         showAdBtn.setOnClickListener(new View.OnClickListener() {
@@ -78,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    //End onCreate Bundle
 
     //============================================================================================
     private void loadFullScreenAd() {
@@ -141,7 +146,14 @@ public class MainActivity extends AppCompatActivity {
         adView = new AdView(this, "IMG_16_9_APP_INSTALL#YOUR_PLACEMENT_ID",AdSize.BANNER_HEIGHT_50);
         LinearLayout adContainer = (LinearLayout) findViewById(R.id.banner_container);
         adContainer.addView(adView);
-        adView.loadAd();
+        sharedPreferences = getSharedPreferences(""+getString(R.string.app_name),MODE_PRIVATE);
+        editor = sharedPreferences.edit();
+        Date date = new Date(System.currentTimeMillis());
+        long millis = date.getTime();
+        long minute=1000*60*2;
+        long oldTime = sharedPreferences.getLong("time",0);
+        long difference = (System.currentTimeMillis()-oldTime);
+        //adView.loadAd();
         AdListener bannerAdListener = new AdListener() {
             @Override
             public void onError(Ad ad, AdError adError) {
@@ -151,12 +163,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onAdLoaded(Ad ad) {
                 tvDisplay.append("\n"+"Add Loaded");
+
             }
 
             @Override
             public void onAdClicked(Ad ad) {
+
                 bannerAdClicked++;
                 //tvDisplay.append("\n"+"Add Clicked"+bannerAdClicked);
+                editor.putLong("time",millis).apply();
 
 
                 if(bannerAdClicked>=2){
@@ -170,10 +185,12 @@ public class MainActivity extends AppCompatActivity {
             public void onLoggingImpression(Ad ad) {
             }
         };
+
         adView.loadAd(adView.buildLoadAdConfig().withAdListener(bannerAdListener).build());
 
     }
 //=======================================================================================
+    /*
     private int sharedPreferences(){
         sharedPreferences = getSharedPreferences(""+getString(R.string.app_name),MODE_PRIVATE);
         editor = sharedPreferences.edit();
@@ -189,6 +206,8 @@ public class MainActivity extends AppCompatActivity {
             return 1;
 
     }
+
+     */
 
 //=======================================================================================
     @Override
